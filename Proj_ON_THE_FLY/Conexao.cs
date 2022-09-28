@@ -35,10 +35,10 @@ namespace Proj_ON_THE_FLY {
         }
 
         public void DeletarDado(SqlConnection conecta, String sql) {
-
+          
             try {
                 conecta.Open();
-                SqlCommand cmd = new SqlCommand(sql, conn);
+                SqlCommand cmd = new SqlCommand(sql, conecta);
                 cmd.Connection = conecta;
                 cmd.ExecuteNonQuery();
                 conecta.Close();
@@ -54,8 +54,7 @@ namespace Proj_ON_THE_FLY {
             try {
 
                 conecta.Open();
-
-                SqlCommand cmd = new SqlCommand(sql, conecta);
+            SqlCommand cmd = new SqlCommand(sql, conecta);
                 cmd.Connection = conecta;
                 cmd.ExecuteNonQuery();
 
@@ -67,29 +66,106 @@ namespace Proj_ON_THE_FLY {
             }
         }
 
-        public String LocalizarDado(SqlConnection conecta, String sql) {
+        public String LocalizarDado(SqlConnection conecta, String sql,int op) {
 
             String recebe = "";
 
             try {
 
-                conecta.Open();
+                //conecta.Open();
 
                 SqlCommand cmd = new SqlCommand(sql, conecta);
 
                 SqlDataReader reader = null;
 
+                switch (op) {
+                    //Localizar Passageiro
+                    case 1:
+                        conecta.Open();
+                        using (reader = cmd.ExecuteReader()) {
+                            Console.WriteLine("\n\t*** Passageiro Localizado ****\n");
+                            while (reader.Read()) {
+                                recebe = reader.GetString(0);
+
+                                Console.Write(" {0}", reader.GetString(0));
+                                Console.Write(" {0}", reader.GetString(1));
+                                Console.Write(" {0}", reader.GetDateTime(2).ToShortDateString());
+                                Console.Write(" {0}", reader.GetDateTime(3).ToShortDateString());
+                                Console.Write(" {0}", reader.GetString(4));
+                                Console.Write(" {0}", reader.GetString(5));
+                                Console.Write(" {0}", reader.GetDateTime(6).ToShortDateString());
+                                //Console.Write(" {0}", reader.GetString(7));
+
+                                Console.WriteLine("\n");
+                            }
+                        }
+                        conecta.Close();
+                        break;
+                        //Localizar Passageiro Restrito
+                        case 2:
+                        conecta.Open();
+                        using (reader = cmd.ExecuteReader()) {
+                            Console.WriteLine("\n\t*** Passageiro Restrito Localizado ****\n");
+                            
+                            while (reader.Read()) {
+                                recebe = reader.GetString(0);
+                                Console.Write("CPF: {0}", reader.GetString(0));
+
+                                Console.WriteLine("\n");
+                            }
+                        }
+                        conecta.Close();
+                        break;
+                        //Localizar Aeronave
+                    case 3:
+                        conecta.Open();
+                        using (reader = cmd.ExecuteReader()) {
+                            Console.WriteLine("\n\t*** Aeronave Localizado ****\n");
+                            while (reader.Read()) {
+                                recebe = reader.GetString(0);
+
+                                Console.Write(" {0}", reader.GetString(0));
+                                Console.Write(" {0}", reader.GetString(1));
+                                Console.Write(" {0}", reader.GetDateTime(2).ToShortDateString());
+                                Console.Write(" {0}", reader.GetString(3));
+                                Console.Write(" {0}", reader.GetDateTime(4).ToShortDateString());
+                                Console.Write(" {0}", reader.GetInt32(5));
+                               
+
+                                Console.WriteLine("\n");
+                            }
+                        }
+                        conecta.Close();
+                        break;
+                }
+
+            } catch (SqlException ex) {
+
+                Console.WriteLine(ex.Message);
+            }
+
+            return recebe;
+
+        }
+        public void ConsultaDado(SqlConnection conecta, String sql) {
+            try {
+
+                conecta.Open();
+
+                SqlCommand cmd = new SqlCommand(sql, conecta);
+                SqlDataReader reader = null;
                 using (reader = cmd.ExecuteReader()) {
-                    Console.WriteLine("\n\t*** Passageiro Localizado ****\n");
+
+                   // Console.WriteLine("\n\t*** Passageiros Cadastrados ****\n");
                     while (reader.Read()) {
-                        recebe = reader.GetString(0);
-                        Console.Write(" {0}", reader.GetString(0));
-                        Console.Write(" {0}", reader.GetString(1));
-                        Console.Write(" {0}", reader.GetDateTime(2).ToShortDateString());
-                        Console.Write(" {0}", reader.GetDateTime(3).ToShortDateString());
-                        Console.Write(" {0}", reader.GetString(4));
-                        Console.Write(" {0}", reader.GetString(5));
-                        Console.Write(" {0}", reader.GetDateTime(6).ToShortDateString());
+
+                         Console.Write(" {0}", reader.GetString(0));
+                         Console.Write(" {0}", reader.GetString(1));
+                         Console.Write(" {0}", reader.GetDateTime(2).ToShortDateString());
+                         Console.Write(" {0}", reader.GetDateTime(3).ToShortDateString());
+                         Console.Write(" {0}", reader.GetString(4));
+                         Console.Write(" {0}", reader.GetString(5));
+                         Console.Write(" {0}", reader.GetDateTime(6).ToShortDateString());
                         //Console.Write(" {0}", reader.GetString(7));
 
                         Console.WriteLine("\n");
@@ -101,42 +177,7 @@ namespace Proj_ON_THE_FLY {
 
                 Console.WriteLine(ex.Message);
             }
-
-            return recebe;
-
         }
-
-
-        //public void ConsultaDado(SqlConnection conecta, String sql) {
-        //    try {
-
-        //        conecta.Open();
-
-        //        SqlCommand cmd = new SqlCommand(sql, conecta);
-        //        SqlDataReader reader = null;
-        //        using (reader = cmd.ExecuteReader()) {
-
-
-        //            while (reader.Read()) {
-        //                Console.Write(" {0}", reader.GetString(0));
-        //                Console.Write(" {0}", reader.GetString(1));
-        //                Console.Write(" {0}", reader.GetDateTime(2));
-        //                Console.Write(" {0}", reader.GetDateTime(3));
-        //                Console.Write(" {0}", reader.GetChar(4));
-        //                Console.Write(" {0}", reader.GetChar(5));
-        //                Console.Write(" {0}", reader.GetDateTime(6));
-        //                //Console.Write(" {0}", reader.GetString(7));
-
-        //                Console.WriteLine("\n");
-        //            }
-        //        }
-        //        conecta.Close();
-
-        //    } catch (SqlException ex) {
-
-        //        Console.WriteLine(ex.Message);
-        //    }
-        //}
 
     }
 }

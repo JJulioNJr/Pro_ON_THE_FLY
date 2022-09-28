@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Data.SqlClient;
 using System.Globalization;
@@ -34,9 +35,9 @@ namespace Proj_ON_THE_FLY {
             this.Situacao = situacao;
         }
 
+
         #region Cadastro de Passageiro
-        public void CadastrarPassageiro(SqlConnection conecta) // não pode cadastrar o mesmo cpf 2x 
-        {
+        public void CadastrarPassageiro(SqlConnection conecta) {
 
             Console.WriteLine("\n*** CADASTRO DE PASSAGEIRO ***");
             Console.Write("\nNome: ");
@@ -79,6 +80,23 @@ namespace Proj_ON_THE_FLY {
                 this.Situacao = char.Parse(Console.ReadLine().ToUpper());
             }
 
+            Console.WriteLine("\nDeseja Salvar CPF em Restrito? ");
+            Console.WriteLine("1- Sim / 2-Não ");
+            Console.Write("\nDigite: ");
+            int op = int.Parse(Console.ReadLine());
+
+            if (op == 1) {
+                string sql = $"Insert into RESTRITO (CPF) Values ('{this.Cpf}');";
+                banco = new Conexao();
+                banco.InserirDado(conecta, sql);
+                Console.WriteLine("\nCadastro de Passageiro Restrito salvo com Sucesso!");
+
+            }
+
+            else {
+                Console.WriteLine("\nCadastro de Restrito não foi Acionado... ");
+
+            }
 
             Console.WriteLine("\nDeseja efetuar a gravação? ");
             Console.WriteLine("1- Sim / 2-Não ");
@@ -90,12 +108,12 @@ namespace Proj_ON_THE_FLY {
                      $"'{this.Nome}', '{this.DataNascimento}', '{this.DataCadastro}', '{this.Sexo}', '{this.Situacao}', '{this.UltimaCompra}');";
                 banco = new Conexao();
                 banco.InserirDado(conecta, sql);
-                Console.WriteLine("Gravação efetuada com sucesso!");
+                Console.WriteLine("\nCadastro de Passageiro  Salvo com sucesso!");
 
             }
 
             else {
-                Console.WriteLine("Gravação não efetuada");
+                Console.WriteLine("\nCadastro de Passageiro não foi Acionado...");
 
             }
         }
@@ -106,27 +124,40 @@ namespace Proj_ON_THE_FLY {
             Console.WriteLine("\n*** Deletar Passageiro ***");
             Console.Write("\nDigite o CPF: ");
             this.Cpf = Console.ReadLine();
+            
             while (ValidarCpf(this.Cpf) == false || this.Cpf.Length < 11) {
                 Console.WriteLine("Cpf invalido, digite novamente");
                 Console.Write("CPF: ");
                 this.Cpf = Console.ReadLine();
             }
 
-            Console.WriteLine("\nDeseja Deletar o Cadastro do Passageiro? ");
-            Console.WriteLine("1- Sim / 2-Não ");
-            Console.Write("\nDigite: ");
-            int opc = int.Parse(Console.ReadLine());
+            String sql = $"Select CPF,NOME,DATA_NASCIMENTO,DATA_CADASTRO,SEXO,SITUACAO,ULTIMA_COMPRA From PASSAGEIRO Where CPF=('{this.Cpf}');";
+            banco = new Conexao();
 
-            if (opc == 1) {
-                string sql = $"Delete From PASSAGEIRO Where CPF=('{this.Cpf}');";
-                banco = new Conexao();
-                banco.InserirDado(conecta, sql);
-                Console.WriteLine("Cadastro de Passageiro Deletado com sucesso!");
+            Console.Clear();
 
+            if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql,1))) {
+                Console.WriteLine("Deseja Deletar Passageiro? ");
+                Console.Write("1- Sim / 2- Não ");
+                Console.Write("\nDigite: ");
+                int op = int.Parse(Console.ReadLine());
+
+
+                if (op == 1) {
+
+                    sql = $"Delete From PASSAGEIRO Where CPF=('{this.Cpf}');";
+                    banco = new Conexao();
+                    banco.DeletarDado(conecta, sql);
+                    Console.WriteLine("\nCadastro de Passageiro Deletado com sucesso!");
+
+                }
+                else {
+                    Console.WriteLine("\nDeletar Passageiro Não Foi Acionado ...");
+
+                }
             }
             else {
-                Console.WriteLine("Cadastro de Pasageiro Não foi Deletado...");
-
+                Console.WriteLine("\nPassageiro não Encontrado!!!");
             }
         }
         #endregion
@@ -134,14 +165,6 @@ namespace Proj_ON_THE_FLY {
         #region Localizar Pasageiro
         public void LocalizarPassageiro(SqlConnection conecta) {
             Console.WriteLine("\n*** Localizar Passageiro Especifico ***");
-            Console.Write("\nDigite o cpf: ");
-            this.Cpf = Console.ReadLine();
-
-            while (ValidarCpf(this.Cpf) == false || this.Cpf.Length < 11) {
-                Console.WriteLine("\nCpf invalido, digite novamente");
-                Console.Write("CPF: ");
-                this.Cpf = Console.ReadLine();
-            }
 
             Console.WriteLine("\nDeseja Localizar um Passageiro no Cadastro? ");
             Console.WriteLine("1- Sim / 2-Não ");
@@ -150,12 +173,28 @@ namespace Proj_ON_THE_FLY {
 
             if (opc == 1) {
                 Console.Clear();
+                Console.WriteLine("\n*** Localizar Passageiro Especifico ***");
+                Console.Write("\nDigite o cpf: ");
+                this.Cpf = Console.ReadLine();
+
+                while (ValidarCpf(this.Cpf) == false || this.Cpf.Length < 11) {
+                    Console.WriteLine("\nCpf invalido, digite novamente");
+                    Console.Write("CPF: ");
+                    this.Cpf = Console.ReadLine();
+                }
+
+                Console.Clear();
                 String sql = $"Select CPF,NOME,DATA_NASCIMENTO,DATA_CADASTRO,SEXO,SITUACAO,ULTIMA_COMPRA From PASSAGEIRO Where CPF=('{this.Cpf}');";
                 banco = new Conexao();
-                banco.LocalizarDado(conecta, sql);
+                //banco.LocalizarDado(conecta, sql);
+                if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql,1))) {
+                    Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
+                    Console.ReadKey();
+                
+                }else{
+                    Console.WriteLine("\n\tPassageiro não Encontrado!!!");
+                }
 
-                Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
-                Console.ReadKey();
 
             }
             else {
@@ -178,7 +217,8 @@ namespace Proj_ON_THE_FLY {
                 Console.Clear();
                 String sql = $"Select CPF,NOME,DATA_NASCIMENTO,DATA_CADASTRO,SEXO,SITUACAO,ULTIMA_COMPRA From PASSAGEIRO";
                 banco = new Conexao();
-                banco.LocalizarDado(conecta, sql);
+                Console.WriteLine("\n\t*** Passageiros Cadastrados ****\n");
+                banco.ConsultaDado(conecta, sql);
 
                 Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
                 Console.ReadKey();
@@ -201,7 +241,7 @@ namespace Proj_ON_THE_FLY {
             this.Cpf = Console.ReadLine();
 
             while (ValidarCpf(this.Cpf) == false || this.Cpf.Length < 11) {
-                Console.WriteLine("\nCpf invalido, digite novamente");
+                Console.WriteLine("\nCpf invalido, Digite Novamente");
                 Console.Write("CPF: ");
                 this.Cpf = Console.ReadLine();
             }
@@ -211,14 +251,14 @@ namespace Proj_ON_THE_FLY {
             //banco.LocalizarDado(conecta,sql);
             Console.Clear();
 
-            if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql))) {
-                Console.WriteLine("Deseja Efetuar a Alteração? ");
+            if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 1))) {
+                Console.WriteLine("Deseja Alterar a Informação de algum Campo ? ");
                 Console.Write("1- Sim / 2- Não: ");
                 Console.Write("\nDigite: ");
                 opc = int.Parse(Console.ReadLine());
 
                 if (opc == 1) {
-                    Console.WriteLine("\nDigite a opção que deseja editar");
+                    Console.WriteLine("\nDigite a Opção que Deseja Editar");
                     Console.WriteLine("1-Nome");
                     Console.WriteLine("2-Data de nascimento");
                     Console.WriteLine("3-Sexo (M/F/N)");
@@ -228,7 +268,7 @@ namespace Proj_ON_THE_FLY {
                     Console.Write("\nDigite: ");
                     opc = int.Parse(Console.ReadLine());
                     while (opc < 1 || opc > 6) {
-                        Console.WriteLine("\nDigite uma opcao valida:");
+                        Console.WriteLine("\nDigite uma Opcao Valida:");
                         Console.Write("\nDigite: ");
                         opc = int.Parse(Console.ReadLine());
 
@@ -239,31 +279,49 @@ namespace Proj_ON_THE_FLY {
                             Console.Write("\nAlterar o Nome: ");
                             this.Nome = Console.ReadLine();
                             sql = $"Update PASSAGEIRO Set NOME=('{this.Nome}') Where CPF=('{this.Cpf}');";
+                            Console.WriteLine("\nNome Editado Com Sucesso... ");
+                            Thread.Sleep(2000);
+                            Console.Clear();
                             break;
                         case 2:
                             Console.Write("\nAlterar a data de Nascimento: ");
                             this.DataNascimento = DateTime.Parse(Console.ReadLine());
+                            Console.WriteLine("\nData de Nascimento Editado Com Sucesso... ");
+                            Thread.Sleep(2000);
+                            Console.Clear();
                             sql = $"Update PASSAGEIRO Set DATA_NASCIMENTO=('{this.DataNascimento}') Where CPF=('{this.Cpf}');";
                             break;
                         case 3:
                             Console.Write("\nAlterar o Sexo (M/F/N): ");
                             this.Sexo = char.Parse(Console.ReadLine());
                             sql = $"Update PASSAGEIRO Set SEXO=('{this.Sexo}') Where CPF=('{this.Cpf}');";
+                            Console.WriteLine("\nSexo Editado Com Sucesso... ");
+                            Thread.Sleep(2000);
+                            Console.Clear();
                             break;
                         case 4:
                             Console.Write("\nAlterar a Ultima Compra: ");
                             this.UltimaCompra = DateTime.Parse(Console.ReadLine());
                             sql = $"Update PASSAGEIRO Set ULTIMA_COMPRA=('{this.UltimaCompra}') Where CPF=('{this.Cpf}');";
+                            Console.WriteLine("\nUltima Compra Editado Com Sucesso... ");
+                            Thread.Sleep(2000);
+                            Console.Clear();
                             break;
                         case 5:
                             Console.Write("\nAlterar a Data de Cadastro: ");
                             this.DataCadastro = DateTime.Parse(Console.ReadLine());
                             sql = $"Update PASSAGEIRO Set DATA_CADASTRO=('{this.DataCadastro}') Where CPF=('{this.Cpf}');";
+                            Console.WriteLine("\nData de Cadastro Editado Com Sucesso... ");
+                            Thread.Sleep(2000);
+                            Console.Clear();
                             break;
                         case 6:
                             Console.WriteLine("\nInforme a Situação: ");
                             this.Situacao = char.Parse(Console.ReadLine());
                             sql = $"Update PASSAGEIRO Set SITUACAO=('{this.Situacao}') Where CPF=('{this.Cpf}');";
+                            Console.WriteLine("\nSituacao Editado Com Sucesso... ");
+                            Thread.Sleep(2000);
+                            Console.Clear();
                             break;
                     }
                     banco = new Conexao();
@@ -280,112 +338,120 @@ namespace Proj_ON_THE_FLY {
         }
         #endregion
 
+        //----------------------------------------Restritos--------------------------------------------------------//
+
+        #region Deletar Passageiro Restrito
+        public void DeletarRestrito(SqlConnection conecta) {
+
+            Console.WriteLine("\n*** Deletar Passageiro RESTRITO ***");
+            Console.Write("\nDigite o CPF: ");
+            this.Cpf = Console.ReadLine();
+            while (ValidarCpf(this.Cpf) == false || this.Cpf.Length < 11) {
+                Console.WriteLine("\nCpf invalido, digite novamente");
+                Console.Write("CPF: ");
+                this.Cpf = Console.ReadLine();
+            }
+
+            String sql = $"Select CPF From RESTRITO Where CPF=('{this.Cpf}');";
+            banco = new Conexao();
+
+            Console.Clear();
+
+            if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 2))) {
+                Console.WriteLine("\nDeseja Deletar Passageiro? ");
+                Console.Write("1- Sim / 2- Não ");
+                Console.Write("\nDigite: ");
+                int op = int.Parse(Console.ReadLine());
 
 
+                if (op == 1) {
+                    sql = $"Delete From RESTRITO Where CPF=('{this.Cpf}');";
+                    banco = new Conexao();
+                    banco.DeletarDado(conecta, sql);
+                    Console.WriteLine("\nPassageiro Restrito Deletado com sucesso!");
 
 
-        //public void RetirarRestrito(SqlConnection conectar) {
-        //    Console.Write("\nDigite o CPF para remover: ");
-        //    string cpf = Console.ReadLine();
-        //    string encontrouRestrito = restritos.Find(restrito => restrito == cpf);
+                }
+                else {
+                    Console.WriteLine("\nDeletar Passageiro Não Foi Acionado ...");
 
-        //    if (encontrouRestrito != null) {
-        //        restritos.Remove(encontrouRestrito);
-        //        Console.WriteLine("O CPF foi removido da lista de restritros");
-        //        GravarRestrito(restritos);
-        //    }
+                }
+            }
+            else {
+                Console.WriteLine("\nPassageiro não Encontrado!!!");
+            }
 
-        //}
-
-
-        //public void LocalizarPassageiro(SqlConnection conecta) {
-        //    Console.WriteLine("Digite o cpf: ");
-        //    string cpf = Console.ReadLine();
-        //    Passageiro encontrouPassageiro = passageiros.Find(passageiro => passageiro.Cpf == cpf);
-
-        //    if (encontrouPassageiro == null) {
-        //        Console.WriteLine("Não existe um registro para esse cpf");
-        //    }
-
-        //    else {
-        //        Console.WriteLine("Nome: " + encontrouPassageiro.Nome);
-        //        Console.WriteLine("CPF: " + encontrouPassageiro.Cpf);
-        //        Console.WriteLine("Data Nascimento: " + encontrouPassageiro.DataNascimento);
-        //        Console.WriteLine("Sexo: " + encontrouPassageiro.Sexo);
-        //        Console.WriteLine("Ultima Compra: " + encontrouPassageiro.UltimaCompra);
-        //        Console.WriteLine("Data cadastro: " + encontrouPassageiro.DataCadastro);
-        //        Console.WriteLine("Situacao: " + encontrouPassageiro.Situacao);
-        //    }
-
-        //}
+        }
+        #endregion
 
 
-        //public void ImprimirTodosPassageiros(List<Passageiro> passageiros) {  // menos os com o status Inativo 
+        #region Localizar Passageiro Restrito
+        public void LocalizarRestrito(SqlConnection conecta) {
+          
 
-        //    foreach (Passageiro passageiro in passageiros) {
-        //        if (passageiro.Situacao == 'A') {
-        //            Console.WriteLine("Nome: " + passageiro.Nome);
-        //            Console.WriteLine("CPF: " + passageiro.Cpf);
-        //            Console.WriteLine("Data Nascimento: " + passageiro.DataNascimento);
-        //            Console.WriteLine("Sexo: " + passageiro.Sexo);
-        //            Console.WriteLine("Ultima Compra: " + passageiro.UltimaCompra);
-        //            Console.WriteLine("Data cadastro: " + passageiro.DataCadastro);
-        //            Console.WriteLine("Situacao: " + passageiro.Situacao);
-        //        }
-        //    }
-        //}
+            Console.WriteLine("\nDeseja Localizar um Passageiro Restrito? ");
+            Console.WriteLine("1- Sim / 2-Não ");
+            Console.Write("\nDigite: ");
+            int opc = int.Parse(Console.ReadLine());
 
-        ////Localizar um passageiro espeficifico pelo cpf (usado na validação de cadastro) 
-        //public bool LocalizarPassageiro(List<Passageiro> passageiros, string cpf) {
-        //    Passageiro encontrouPassageiro = passageiros.Find(passageiro => passageiro.Cpf == cpf);
-        //    if (encontrouPassageiro == null) {
-        //        return false;
-        //    }
+            if (opc == 1) {
+                Console.Clear();
+                Console.WriteLine("\n*** Localizar Passageiro RESTRITO Especifico ***");
+                Console.Write("\nDigite o cpf: ");
+                this.Cpf = Console.ReadLine();
 
-        //    else {
-        //        return true;
-        //    }
-        //}
+                while (ValidarCpf(this.Cpf) == false || this.Cpf.Length < 11) {
+                    Console.WriteLine("\nCpf invalido, digite novamente");
+                    Console.Write("CPF: ");
+                    this.Cpf = Console.ReadLine();
+                }
+                String sql = $"Select CPF From RESTRITO Where CPF=('{this.Cpf}');";
+                banco = new Conexao();
+                Console.Clear();
+                if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 2))) {
+                    Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
+                    Console.ReadKey();
 
+                }
+                else {
+                    Console.WriteLine("\n\tPassageiro não Encontrado!!!");
+                }
 
-        //public void CadastrarRestrito(List<string> restritos) {
-        //    Console.WriteLine("Digite o CPF restrito: ");
-        //    string cpf = Console.ReadLine();
-        //    while (ValidarCpf(cpf) == false || cpf.Length < 11) {
-        //        Console.WriteLine("CPF inválido, insira novamente: ");
-        //        cpf = Console.ReadLine();
-        //    }
+               
 
-        //    string encontrouRestrito = restritos.Find(restrito => restrito == cpf);
+            }
+            else {
+                Console.WriteLine("\nLocalização de Passageiro Não foi Acionada...");
 
-        //    if (encontrouRestrito != null) {
-        //        Console.WriteLine("Esse CPF já existe na lista de restritos!");
-        //        Console.WriteLine("Impossivel inserir novamente!");
-        //    }
+            }
 
-        //    else {
-        //        Console.WriteLine("Cadastro efetuado com sucesso!");
-        //        restritos.Add(cpf);
-        //        GravarRestrito(restritos);
-        //    }
-        //}
+        }
+        #endregion
 
-        //public void LocalizarRestrito(List<string> restritos) {
-        //    Console.WriteLine("Digite o CPF para consultar: ");
-        //    string cpf = Console.ReadLine();
-        //    string encontrouRestrito = restritos.Find(restrito => restrito == cpf);
+        #region Consultar Restrito
+        public void ConsultarRestrito(SqlConnection conecta) {
 
-        //    if (encontrouRestrito != null) {
-        //        Console.WriteLine("Esse CPF é restrito pela Polícia Federal!");
+            Console.WriteLine("\nDeseja Consultar Todos Passageiros RESTRITOS Cadastrados? ");
+            Console.WriteLine("1- Sim / 2-Não ");
+            Console.Write("\nDigite: ");
+            int opc = int.Parse(Console.ReadLine());
 
-        //    }
+            if (opc == 1) {
+                Console.Clear();
+                String sql = $"Select CPF From RESTRITO";
+                banco = new Conexao();
+                banco.LocalizarDado(conecta, sql, 2);
 
-        //    else {
-        //        Console.WriteLine("Não há nenhuma restrição desse CPF na Polícia Federal!");
-        //    }
-        //}
+                Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
+                Console.ReadKey();
+            }
+            else {
+                Console.WriteLine("\nConsulta de Passageiros Não foi Acionada...");
 
+            }
 
+        }
+        #endregion
 
         public bool ValidarCpf(string cpf) {
             int[] multiplicador1 = new int[9] { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
