@@ -10,19 +10,20 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Proj_ON_THE_FLY {
-    internal class Aeronave {
+    internal  class Aeronave {
 
         public String Inscricao { get; set; }
         public String Capacidade { get; set; }
-        
-        public DateTime UltimaVenda = DateTime.Now;
-        public DateTime DataCadastro = DateTime.Now;
+        public String CNPJ { get; set; }
+
+        public DateTime UltimaVenda { get; set; }
+        public DateTime DataCadastro { get; set; }
         public char Situacao { get; set; }
 
         public Conexao banco;
 
-       // String Companhia_Aerea CNPJ;
-         public String  CNPJ { get; set; }
+        public CompanhiaAerea cia;
+     
 
         public Aeronave() { }
         public Aeronave(String Inscrição, char Situacao, String Capacidade) {
@@ -31,6 +32,7 @@ namespace Proj_ON_THE_FLY {
             this.Capacidade = Capacidade;
             this.Situacao = Situacao;
         }
+
         #region GeraNumeros
         public String GeraNumero() {
             Random rand = new Random();
@@ -52,67 +54,81 @@ namespace Proj_ON_THE_FLY {
         #endregion
 
         #region Cadastra Aeronave
-        public void CadastroAeronaves(SqlConnection conecta) {
-
-            Console.WriteLine("\n*** Cadastro de Aeronave ***");
-            
-            //pedir o cnpj procurar na tbela companhia e se tiver agrupar na variavel
-            this.CNPJ = "15086511000145";
-            //Procurar se existe um cnpj
-            this.Inscricao = "PR-" + GeraNumero();
-            
-            #region Capacidade Aeronave
+        public void CadastrarAeronave(SqlConnection conecta) {
             int cap = 0;
-            do {
-                Console.Write("\nInforme a Capacidade da Aeronave: ");
-                cap = int.Parse(Console.ReadLine());
-                if (cap < 100 || cap > 999) {
-                    Console.Clear();
-                    Console.WriteLine("\nCapacidade Informada Inválida...!!!" +
-                                      "\nInforme Novamente!!!");
+            cia = new CompanhiaAerea();
+            Console.Clear();
+            Console.WriteLine("\n*** Cadastro de Aeronave ***\n");
+            Console.WriteLine("Informe o CNPJ da Companhia Aerea: ");
+            Console.Write("CNPJ: ");
+            this.CNPJ = Console.ReadLine();
+           
+            while (cia.ValidarCnpj(this.CNPJ) == false || this.CNPJ.Length < 14) {
+                Console.WriteLine("\nCNPJ Invalido, Digite Novamente");
+                Console.Write("\nLocalizar Cia Aerea Informe o CNPJ: ");
+                this.CNPJ = Console.ReadLine();
+            }
+            
+            String sql = $"SELECT CNPJ,RAZAO_SOCIAL,DATA_ABERTURA,ULTIMO_VOO,SITUACAO,DATA_CADASTRO FROM COMPANHIA_AEREA WHERE CNPJ = '{this.CNPJ}';";
+            banco = new Conexao();
+            Console.WriteLine("\n\t*** Companhia Aerea Cadastrada ****\n");
+            if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 4))) {
+                
+                this.Inscricao = "PR-" + GeraNumero();
 
-                    Thread.Sleep(2000);
-                    Console.Clear();
+                do {
+                    Console.Write("\nInforme a Capacidade da Aeronave: ");
+                    cap = int.Parse(Console.ReadLine());
+                    if (cap < 100 || cap > 999) {
+                        Console.Clear();
+                        Console.WriteLine("\nCapacidade Informada Inválida...!!!" +
+                                          "\nInforme Novamente!!!");
+
+                        Thread.Sleep(2000);
+                        Console.Clear();
+                    }
+                    this.Capacidade = cap.ToString();
+
+                } while (cap < 100 || cap > 999);
+
+
+                do {
+                    Console.Write("\nInfome a Situação da Aeronave:" +
+                                  "\nA-Ativo ou I-Inativo\n" +
+                                  "\nSituação: ");
+                    this.Situacao = char.Parse(Console.ReadLine().ToUpper());
+
+                } while (!this.Situacao.Equals('A') && !this.Situacao.Equals('I'));
+
+                this.UltimaVenda = DateTime.Now;
+                this.DataCadastro = DateTime.Now;
+
+                Console.WriteLine("\nDeseja Salvar o Cadastrado de Aeronave? ");
+                Console.WriteLine("1- Sim / 2-Não ");
+                Console.Write("\nDigite: ");
+                int op = int.Parse(Console.ReadLine());
+
+
+                if (op == 1) {
+                    sql = $"Insert Into Aeronave(ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE) " +
+                                $"Values ('{this.Inscricao}','{this.CNPJ}','{this.DataCadastro}','{this.Situacao}','{this.UltimaVenda}','{this.Capacidade}');";
+                    banco = new Conexao();
+                    banco.InserirDado(conecta, sql);
+                    Console.WriteLine("\nCadastro de Aeronave Salvo com Sucesso!");
+
+                }else {
+                    Console.WriteLine("\nCadastro de Aeronave Não Foi Acionado... ");
+
                 }
-                Capacidade = cap.ToString();
-
-            } while (cap < 100 || cap > 999);
-            #endregion
-            
-            do {
-                Console.Write("\nInfome a Situação da Aeronave:" +
-                              "\nA-Ativo ou I-Inativo\n" +
-                              "\nSituação: ");
-                Situacao = char.Parse(Console.ReadLine().ToUpper());
-
-            } while (!Situacao.Equals('A') && !Situacao.Equals('I'));
-
-            UltimaVenda = DateTime.Now;
-            DataCadastro = DateTime.Now;
-            
-            Console.WriteLine("\nDeseja Salvar o Cadastrado de Aeronave? ");
-            Console.WriteLine("1- Sim / 2-Não ");
-            Console.Write("\nDigite: ");
-            int op = int.Parse(Console.ReadLine());
-            
-          
-            if (op == 1) {
-                String sql = $"Insert Into Aeronave(ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE) " +
-                             $"Values ('{this.Inscricao}','{this.CNPJ}','{this.DataCadastro}','{this.Situacao}','{this.UltimaVenda}','{this.Capacidade}');";
-                banco = new Conexao();
-                banco.InserirDado(conecta, sql);
-                Console.WriteLine("\nCadastro de Aeronave Salvo com Sucesso!");
-            
-            } else {
-                Console.WriteLine("\nCadastro de Aeronave não Foi Acionado... ");
-
+            }else {
+                Console.WriteLine("\n Companhia Aerea Não Encontrata....");
             }
         }
         #endregion
 
         #region Localizar Aeronave
         public void LocalizarAeronave(SqlConnection conecta) {
-
+            cia = new CompanhiaAerea();
             Console.WriteLine("\n*** Localizar Aeronave Especifico ***");
 
             Console.WriteLine("\nDeseja Localizar uma Aeronave no Cadastro? ");
@@ -124,26 +140,31 @@ namespace Proj_ON_THE_FLY {
                 Console.Clear();
                 Console.WriteLine("\n*** Localizar Aeronave Especifico ***");
                 Console.Write("\n Digite a ID_ANAC: ");
-                this.Inscricao = Console.ReadLine();
+                this.Inscricao = Console.ReadLine().ToUpper();
 
                 while (this.Inscricao.Length < 6) {
                     Console.WriteLine("\nID_ANAC Invalido, Digite Novamente");
                     Console.Write("ID_ANAC: ");
-                    this.Inscricao = Console.ReadLine();
+                    this.Inscricao = Console.ReadLine().ToUpper();
                 }
 
-                //Ver se existe Companhia Aeronave cadastrada, perguntar pro usuario o CNPJ manda pro banco via select e  localizar e se tiver deletar
-                this.CNPJ = "15086511000145";
+                Console.WriteLine("Informe o CNPJ da Companhia Aerea: ");
+                Console.Write("CNPJ: ");
+                this.CNPJ = Console.ReadLine();
+                while (cia.ValidarCnpj(this.CNPJ) == false || this.CNPJ.Length < 14) {
+                    Console.WriteLine("\nCNPJ Invalido, Digite Novamente");
+                    Console.Write("\nLocalizar Cia Aerea Informe o CNPJ: ");
+                    this.CNPJ= Console.ReadLine();
+                }
 
-               
+
                 String sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE Where ID_ANAC=('{this.Inscricao}') and CNPJ=('{this.CNPJ}');";
-              //  String sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE";
+          
                 banco=new Conexao();
                 Console.Clear();
-                if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 3))) {
-                    Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
-                    Console.ReadKey();
 
+                if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 3))) {
+                    Console.WriteLine();
                 }
                 else {
                     Console.WriteLine("\n\tAeronove não Encontrado!!!");
@@ -157,7 +178,8 @@ namespace Proj_ON_THE_FLY {
 
         #region Deletar Aeronave
         public void DeletarAeronave(SqlConnection conecta) {
-
+            cia = new CompanhiaAerea();
+            Console.Clear();
             Console.WriteLine("\n*** Deletar Aeronave ***");
             Console.Write("\nDigite o ID_ANAC: ");
             this.Inscricao =Console.ReadLine().ToUpper();
@@ -167,14 +189,20 @@ namespace Proj_ON_THE_FLY {
                 Console.Write("ID_ANAC: ");
                 this.Inscricao = Console.ReadLine().ToUpper();
             }
-
-           
-
+            
+            Console.WriteLine("Informe o CNPJ da Companhia Aerea: ");
+            Console.Write("CNPJ: ");
+            this.CNPJ = Console.ReadLine();
+            while (cia.ValidarCnpj(this.CNPJ) == false || this.CNPJ.Length < 14) {
+                Console.WriteLine("\nCNPJ Invalido, Digite Novamente");
+                Console.Write("\nLocalizar Cia Aerea Informe o CNPJ: ");
+                this.CNPJ = Console.ReadLine();
+            }
+            
             Console.Clear();
-            // String sql = $"Select ID_ANAC,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE Where ID_ANAC=('{this.Inscricao}') and CNPJ=('{this.CNPJ}');";
-            String sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE Where ID_ANAC=('{this.Inscricao}');";
+            String sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE Where ID_ANAC=('{this.Inscricao}') and CNPJ=('{this.CNPJ}');";
             banco = new Conexao();
-            //switch
+          
             if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 3))) {
                 Console.WriteLine("Deseja Deletar Aeronave? ");
                 Console.Write("1- Sim / 2- Não ");
@@ -182,10 +210,6 @@ namespace Proj_ON_THE_FLY {
                 int op = int.Parse(Console.ReadLine());
 
                 if (op == 1) {
-
-                    //Ver se existe Companhia Aeronave cadastrada, perguntar pro usuario o CNPJ manda pro banco via select e  localizar e se tiver deletar
-                  // USei Para testa
-                     this.CNPJ = "15086511000145";
 
                     sql = $"Delete From AERONAVE Where ID_ANAC=('{this.Inscricao}') and CNPJ=('{this.CNPJ}');";
                     banco = new Conexao();
@@ -208,7 +232,7 @@ namespace Proj_ON_THE_FLY {
         public void EditarAeronave(SqlConnection conecta) {
             int opc = 0;
 
-
+            Console.Clear();
             Console.WriteLine("\n*** Editar Aeronave ***");
             Console.Write("\nDigite o ID_ANAC: ");
             this.Inscricao = Console.ReadLine().ToUpper();
@@ -218,22 +242,19 @@ namespace Proj_ON_THE_FLY {
                 Console.Write("ID_ANAC: ");
                 this.Inscricao = Console.ReadLine().ToUpper();
             }
-
-            //pedir o cnpj 
-            //this.CNPJ = "15086511000145";
-
+            
             Console.Clear();
             String sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE Where ID_ANAC=('{this.Inscricao}');";
             banco = new Conexao();
 
-            //switch
+          
             if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 3))) {
                 Console.WriteLine("\nDeseja Alterar a Informação de algum Campo ? ");
                 Console.Write("1- Sim / 2- Não: ");
                 Console.Write("\nDigite: ");
                 opc = int.Parse(Console.ReadLine());
-
-
+                Console.Clear();
+                Console.WriteLine("\n*** Editar Campos da Aeronave ***\n");
                 if (opc == 1) {
                     Console.WriteLine("\nDigite a Opção que Deseja Editar");
                     Console.WriteLine("1-Data_Cadastro");
@@ -270,7 +291,7 @@ namespace Proj_ON_THE_FLY {
                             Console.Write("\nAlterar Situação: ");
                             Console.WriteLine("\nA-Ativo ou I-Inativo");
                             Console.Write("Situacao: ");
-                            this.Situacao = char.Parse(Console.ReadLine());
+                            this.Situacao = char.Parse(Console.ReadLine().ToUpper());
                             sql = $"Update AERONAVE Set SITUACAO=('{this.Situacao}') Where ID_ANAC=('{this.Inscricao}');";
                             Console.WriteLine("\nSituacao Editado Com Sucesso... ");
                             Thread.Sleep(2000);
@@ -286,12 +307,9 @@ namespace Proj_ON_THE_FLY {
                             break;
 
                     }
-
-
+                   
                     banco = new Conexao();
                     banco.EditarDado(conecta, sql);
-
-
                 }
             }
             else {
@@ -314,30 +332,114 @@ namespace Proj_ON_THE_FLY {
 
                 case 1:
                     Console.Clear();
-                    Console.Write("\n*** Aeronaves Ativas ***\n");
+                    Console.Write("\n\t*** Aeronaves Ativas ***\n");
                     this.Situacao = 'A';
                     sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE Where SITUACAO=('{this.Situacao}');";
                     banco = new Conexao();
-                    banco.LocalizarDado(conecta,sql,3);
+                    if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 3))) {
+                        Console.WriteLine();
+                    }
+                    else {
+                        Console.WriteLine("Não Existe Cadastro de Aeronaves Ativas\n");
+                    }
                     break;
                 case 2:
                     Console.Clear();
-                    Console.Write("\n*** Aeronaves Ativas ***\n");
+                    Console.Write("\n\t*** Aeronaves Inativas ***\n");
                     this.Situacao = 'I';
-                    sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE Where SITUACA)=('{this.Situacao}');";
+                    sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE Where SITUACAO=('{this.Situacao}');";
                     banco = new Conexao();
-                    banco.LocalizarDado(conecta, sql,3);
+                    if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 3))) {
+                        Console.WriteLine();
+                    }
+                    else {
+                        Console.WriteLine("Não Existe Cadastro de Aeronaves Inativas\n");
+                    }
                     break;
                 case 3:
                     Console.Clear();
-                    Console.Write("\n*** Aeronaves Cadastradas ***\n");
-                    sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE ";
+                    Console.Write("\n\t*** Aeronaves Cadastradas ***\n");
+                    sql = $"Select ID_ANAC,CNPJ,DATA_CADASTRO,SITUACAO,ULTIMA_VENDA,CAPACIDADE From AERONAVE";
                     banco = new Conexao();
-                    banco.LocalizarDado(conecta, sql,3);
+                    if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 3))) {
+                        Console.WriteLine();
+                    }
+                    else {
+                        Console.WriteLine("Não Existe Aeronaves Cadastradas...\n");
+                    }
                     break;
             }
             
         }
         #endregion
+
+        #region Menu Aeronave
+        public void MenuAeronave(SqlConnection conecta) {
+            do {
+              
+                Console.Clear();
+                Console.WriteLine("\n\t\t*** ON THE FLY ***");
+                Console.WriteLine("\n\t    *** Menu de Aeronave ***");
+                Console.WriteLine("\nEscolha a opção desejada:\n" +
+                                 "\n[1] Voltar ao Menu anterior" +
+                                 "\n[2] Cadastrar" +
+                                 "\n[3] Localizar" +
+                                 "\n[4] Editar" +
+                                 "\n[5] Deletar" +
+                                 "\n[6] Consultar Aeronaves" +
+                                 "\n[0] Sair");
+                Console.Write("\nDigite: ");
+                int op = int.Parse(Console.ReadLine());
+                while (op < 0 || op > 7) {
+                    Console.WriteLine("\nOpção inválida, informe novamente: ");
+                    Console.WriteLine("\nEscolha a opção desejada:\n" +
+                                      "\n[1] Voltar ao Menu anterior" +
+                                      "\n[2] Cadastrar" +
+                                      "\n[3] Localizar" +
+                                      "\n[4] Editar" +
+                                      "\n[5] Deletar " +
+                                      "\n[6] Consultar Aeronaves"+
+                                      "\n[0] Sair");
+                    Console.Write("\nDigite: ");
+                    op = int.Parse(Console.ReadLine());
+                }
+                switch (op) {
+                    case 0:
+                        Environment.Exit(0);
+                        break;
+                    case 1:
+                        Console.Clear();
+                        Program.Menu();
+                        break;
+                    case 2:
+                        CadastrarAeronave(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 3:
+                        LocalizarAeronave(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 4:
+                        EditarAeronave(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 5:
+                        DeletarAeronave(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 6:
+                        ConsultarAeronave(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                }
+            } while (true);
+        }
+        #endregion
+
     }
 }
