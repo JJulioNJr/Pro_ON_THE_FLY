@@ -124,7 +124,7 @@ namespace Proj_ON_THE_FLY {
             Console.WriteLine("\n*** Deletar Passageiro ***");
             Console.Write("\nDigite o CPF: ");
             this.Cpf = Console.ReadLine();
-            
+
             while (ValidarCpf(this.Cpf) == false || this.Cpf.Length < 11) {
                 Console.WriteLine("Cpf invalido, digite novamente");
                 Console.Write("CPF: ");
@@ -136,7 +136,7 @@ namespace Proj_ON_THE_FLY {
 
             Console.Clear();
 
-            if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql,1))) {
+            if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 1))) {
                 Console.WriteLine("Deseja Deletar Passageiro? ");
                 Console.Write("1- Sim / 2- Não ");
                 Console.Write("\nDigite: ");
@@ -164,6 +164,7 @@ namespace Proj_ON_THE_FLY {
 
         #region Localizar Pasageiro
         public void LocalizarPassageiro(SqlConnection conecta) {
+            Console.Clear();
             Console.WriteLine("\n*** Localizar Passageiro Especifico ***");
 
             Console.WriteLine("\nDeseja Localizar um Passageiro no Cadastro? ");
@@ -187,11 +188,11 @@ namespace Proj_ON_THE_FLY {
                 String sql = $"Select CPF,NOME,DATA_NASCIMENTO,DATA_CADASTRO,SEXO,SITUACAO,ULTIMA_COMPRA From PASSAGEIRO Where CPF=('{this.Cpf}');";
                 banco = new Conexao();
                 //banco.LocalizarDado(conecta, sql);
-                if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql,1))) {
-                    Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
-                    Console.ReadKey();
-                
-                }else{
+                if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 1))) {
+                    Console.WriteLine();
+
+                }
+                else {
                     Console.WriteLine("\n\tPassageiro não Encontrado!!!");
                 }
 
@@ -207,7 +208,7 @@ namespace Proj_ON_THE_FLY {
 
         #region Consultar Passageiro
         public void ConsultarPassageiro(SqlConnection conecta) {
-
+            Console.Clear();
             Console.WriteLine("\nDeseja Consultar Todos Passageiros Cadastrados? ");
             Console.WriteLine("1- Sim / 2-Não ");
             Console.Write("\nDigite: ");
@@ -220,8 +221,6 @@ namespace Proj_ON_THE_FLY {
                 Console.WriteLine("\n\t*** Passageiros Cadastrados ****\n");
                 banco.ConsultaDado(conecta, sql);
 
-                Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
-                Console.ReadKey();
             }
             else {
                 Console.WriteLine("Consulta de Passageiros Não foi Acionada...");
@@ -293,7 +292,7 @@ namespace Proj_ON_THE_FLY {
                             break;
                         case 3:
                             Console.Write("\nAlterar o Sexo (M/F/N): ");
-                            this.Sexo = char.Parse(Console.ReadLine());
+                            this.Sexo = char.Parse(Console.ReadLine().ToUpper());
                             sql = $"Update PASSAGEIRO Set SEXO=('{this.Sexo}') Where CPF=('{this.Cpf}');";
                             Console.WriteLine("\nSexo Editado Com Sucesso... ");
                             Thread.Sleep(2000);
@@ -317,7 +316,9 @@ namespace Proj_ON_THE_FLY {
                             break;
                         case 6:
                             Console.WriteLine("\nInforme a Situação: ");
-                            this.Situacao = char.Parse(Console.ReadLine());
+                            Console.WriteLine("Situação(A - Ativo / I - Inativo): ");
+                            Console.Write("\nSituacao: ");
+                            this.Situacao = char.Parse(Console.ReadLine().ToUpper());
                             sql = $"Update PASSAGEIRO Set SITUACAO=('{this.Situacao}') Where CPF=('{this.Cpf}');";
                             Console.WriteLine("\nSituacao Editado Com Sucesso... ");
                             Thread.Sleep(2000);
@@ -387,8 +388,8 @@ namespace Proj_ON_THE_FLY {
 
         #region Localizar Passageiro Restrito
         public void LocalizarRestrito(SqlConnection conecta) {
-          
 
+            Console.Clear();
             Console.WriteLine("\nDeseja Localizar um Passageiro Restrito? ");
             Console.WriteLine("1- Sim / 2-Não ");
             Console.Write("\nDigite: ");
@@ -409,16 +410,12 @@ namespace Proj_ON_THE_FLY {
                 banco = new Conexao();
                 Console.Clear();
                 if (!string.IsNullOrEmpty(banco.LocalizarDado(conecta, sql, 2))) {
-                    Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
-                    Console.ReadKey();
+                    Console.WriteLine();
 
                 }
                 else {
                     Console.WriteLine("\n\tPassageiro não Encontrado!!!");
                 }
-
-               
-
             }
             else {
                 Console.WriteLine("\nLocalização de Passageiro Não foi Acionada...");
@@ -430,7 +427,7 @@ namespace Proj_ON_THE_FLY {
 
         #region Consultar Restrito
         public void ConsultarRestrito(SqlConnection conecta) {
-
+            Console.Clear();
             Console.WriteLine("\nDeseja Consultar Todos Passageiros RESTRITOS Cadastrados? ");
             Console.WriteLine("1- Sim / 2-Não ");
             Console.Write("\nDigite: ");
@@ -441,9 +438,6 @@ namespace Proj_ON_THE_FLY {
                 String sql = $"Select CPF From RESTRITO";
                 banco = new Conexao();
                 banco.LocalizarDado(conecta, sql, 2);
-
-                Console.WriteLine("\n\tAperte Qualquer Botão para Encerrar...");
-                Console.ReadKey();
             }
             else {
                 Console.WriteLine("\nConsulta de Passageiros Não foi Acionada...");
@@ -453,6 +447,96 @@ namespace Proj_ON_THE_FLY {
         }
         #endregion
 
+        #region Menu Passageiro
+        public void MenuPassageiro(SqlConnection conecta) {
+            do {
+
+                Console.Clear();
+                Console.WriteLine("\n\t\t*** ON THE FLY ***");
+                Console.WriteLine("\n\t     *** Menu de Passageiro ***");
+                Console.WriteLine("\nEscolha a opção desejada:\n" +
+                                     "\n[1] Voltar ao Menu anterior" +
+                                     "\n[2] Cadastrar" +
+                                     "\n[3] Localizar" +
+                                     "\n[4] Consultar Todos" +
+                                     "\n[5] Editar" +
+                                     "\n[6] Deletar " +
+                                     "\n[7] Localizar Restrito " +
+                                     "\n[8] Consultar Todos os Restritos" +
+                                     "\n[9] Deletar Restritos " +
+                                     "\n[0] Sair");
+                Console.Write("\nDigite: ");
+                int op = int.Parse(Console.ReadLine());
+                while (op < 0 || op > 10) {
+                    Console.WriteLine("\nOpção inválida, informe novamente: ");
+                    Console.WriteLine("\nEscolha a opção desejada:\n" +
+                                      "\n[1] Voltar ao Menu anterior" +
+                                      "\n[2] Cadastrar" +
+                                      "\n[3] Localizar" +
+                                      "\n[4] Consultar Todos" +
+                                      "\n[5] Editar" +
+                                      "\n[6] Deletar " +
+                                      "\n[7] Localizar Restrito " +
+                                      "\n[8] Consultar Todos os Restritos" +
+                                      "\n[9] Deletar Restritos " +
+                                      "\n[0] Sair");
+                    Console.Write("\nDigite: ");
+                    op = int.Parse(Console.ReadLine());
+                }
+                switch (op) {
+                    case 0:
+                        Environment.Exit(0);
+                        break;
+                    case 1:
+                        Console.Clear();
+                        Program.Menu();
+                        break;
+                    case 2:
+                        CadastrarPassageiro(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 3:
+                        LocalizarPassageiro(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 4:
+                        ConsultarPassageiro(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 5:
+                        EditarPassageiro(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 6:
+                        DeletarPassageiro(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 7:
+                        LocalizarRestrito(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 8:
+                        ConsultarRestrito(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                    case 9:
+                        DeletarRestrito(conecta);
+                        Console.WriteLine("\nPressione uma Tecla Para Continuar...");
+                        Console.ReadKey();
+                        break;
+                }
+            } while (true);
+        }
+        #endregion
+
+        #region Validador de CPF
         public bool ValidarCpf(string cpf) {
             int[] multiplicador1 = new int[9] { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
             int[] multiplicador2 = new int[10] { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
@@ -487,6 +571,7 @@ namespace Proj_ON_THE_FLY {
             digito = digito + resto.ToString();
             return cpf.EndsWith(digito);
         }
+        #endregion
 
     }
 }
